@@ -1,0 +1,86 @@
+/* The Freelancers — questionnaire design system
+   Two colours only: ink and linen. Tints of ink for secondary text and lines. */
+:root{
+  --ink:#1A1916; --linen:#F2ECE2;
+  --fg:var(--ink); --bg:var(--linen);
+  --fg-2:rgba(26,25,22,.70);   /* secondary text, >= 4.5:1 on linen */
+  --line:rgba(26,25,22,.16);
+  --line-strong:rgba(26,25,22,.38);
+  --tint:rgba(26,25,22,.05);
+  --font-en:"Inter Tight", system-ui, sans-serif;
+  --font-ar:"IBM Plex Sans Arabic", Tahoma, sans-serif;
+  --font-mono:"IBM Plex Mono", ui-monospace, monospace;
+  --r:14px; --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --fg:var(--linen); --bg:var(--ink);
+  --fg-2:rgba(242,236,226,.72); --line:rgba(242,236,226,.16);
+  --line-strong:rgba(242,236,226,.40); --tint:rgba(242,236,226,.06); color-scheme:dark; } }
+
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-ar);font-size:17px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  padding:env(safe-area-inset-top,0) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0) max(16px,env(safe-area-inset-left,0px))}
+[hidden]{display:none!important}
+
+/* Shell */
+.tf-wrap{max-width:600px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;gap:var(--s5);padding-block:var(--s5) var(--s6)}
+.tf-top{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);min-height:40px}
+.tf-mark{font-family:var(--font-en);font-weight:600;font-size:17px;letter-spacing:-.01em;direction:ltr;color:var(--fg);text-decoration:none}
+.tf-mark img{display:block;height:28px;width:auto}
+.tf-count{font-family:var(--font-mono);font-size:13px;color:var(--fg-2);direction:ltr;font-variant-numeric:tabular-nums}
+.tf-bar{height:2px;background:var(--line)}
+.tf-bar i{display:block;height:100%;width:0;background:var(--fg);transition:width .4s ease}
+.tf-main{flex:1;display:flex;flex-direction:column;gap:var(--s5);padding-top:var(--s4)}
+.tf-foot{display:flex;justify-content:space-between;gap:var(--s3);font-family:var(--font-mono);font-size:12px;color:var(--fg-2);
+  direction:ltr;border-top:1px solid var(--line);padding-top:var(--s4)}
+
+/* Type */
+.tf-label{font-size:14px;font-weight:500;color:var(--fg-2);margin:0}
+.tf-q{font-size:28px;line-height:1.4;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.005em}
+.tf-q:focus{outline:none}
+.tf-hint{margin:0;color:var(--fg-2);font-size:16px}
+
+/* Options */
+.tf-opts{display:flex;flex-direction:column;gap:var(--s2)}
+.tf-opt{display:flex;align-items:center;gap:var(--s3);width:100%;min-height:56px;text-align:start;font:inherit;font-size:17px;
+  color:var(--fg);background:transparent;border:1px solid var(--line-strong);border-radius:var(--r);padding:var(--s3) var(--s4);cursor:pointer;
+  transition:background .15s ease,border-color .15s ease,color .15s ease}
+@media (hover:hover){.tf-opt:hover{background:var(--tint)}}
+.tf-opt .tf-tick{flex:0 0 20px;height:20px;border-radius:50%;border:1.5px solid currentColor;opacity:.55;display:grid;place-items:center}
+.tf-opt.multi .tf-tick{border-radius:5px}
+.tf-opt[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tf-opt[aria-pressed="true"] .tf-tick{opacity:1}
+.tf-opt[aria-pressed="true"] .tf-tick::after{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.tf-opt.multi[aria-pressed="true"] .tf-tick::after{border-radius:2px}
+
+/* Inputs */
+.tf-field{display:block}
+.tf-input{display:block;width:100%;font:inherit;font-size:17px;color:var(--fg);background:transparent;
+  border:1px solid var(--line-strong);border-radius:var(--r);padding:14px var(--s4);min-height:56px}
+.tf-input::placeholder{color:var(--fg-2);opacity:.8}
+textarea.tf-input{min-height:130px;resize:vertical}
+
+/* Buttons */
+.tf-nav{display:flex;gap:var(--s2);align-items:stretch}
+.tf-btn{font:inherit;font-weight:600;font-size:17px;min-height:56px;padding:0 var(--s5);border-radius:var(--r);cursor:pointer;
+  border:1px solid var(--fg);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;transition:opacity .15s ease}
+.tf-btn.primary{background:var(--fg);color:var(--bg);flex:1}
+.tf-btn.primary:disabled{opacity:.3;cursor:not-allowed}
+.tf-btn.secondary{background:transparent;color:var(--fg);border-color:var(--line-strong)}
+.tf-input:focus-visible,.tf-opt:focus-visible,.tf-btn:focus-visible,.tf-mark:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+
+/* Review */
+.tf-summary{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.tf-summary div{padding:var(--s3) 0;border-bottom:1px solid var(--line)}
+.tf-summary b{display:block;font-size:14px;font-weight:500;color:var(--fg-2)}
+.tf-summary span{white-space:pre-line;font-weight:500}
+.tf-note{margin:0;font-size:15px;color:var(--fg-2);min-height:1em}
+
+/* Motion */
+.tf-in{animation:tf-in .35s ease both}
+@keyframes tf-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.tf-in{animation:none}.tf-bar i,.tf-opt{transition:none}}
+@media (max-width:420px){.tf-q{font-size:24px}}
