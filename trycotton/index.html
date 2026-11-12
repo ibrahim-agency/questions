@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>أسئلة تراي — The Freelancers</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one centred card, one question per screen, progress line on top */
+:root{
+  --bg:#F3F1EC; --card:#FFFFFF; --ink:#1D1F24; --muted:#5E6470; --line:#DEDAD2;
+  --accent:#1F5C4A; --accent-ink:#FFFFFF; --accent-soft:#E3EEEA; --focus:#2F7D66;
+  --font:"IBM Plex Sans Arabic", Tahoma, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#15171B; --card:#1E2126; --ink:#ECEDEF; --muted:#A3A9B3; --line:#33373E;
+  --accent:#5DB79A; --accent-ink:#0F1A16; --accent-soft:#1F3029; --focus:#7FD0B5; color-scheme: dark; } }
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:560px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding-block:20px 28px;gap:18px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:700;letter-spacing:.2px;font-size:15px;direction:ltr}
+.brand span{color:var(--accent)}
+.count{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .35s ease}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px 22px;display:flex;flex-direction:column;gap:18px;flex:0 0 auto}
+.step{font-size:13px;color:var(--accent);font-weight:600}
+h1{font-size:24px;line-height:1.45;margin:0;text-wrap:balance}
+.hint{margin:0;color:var(--muted);font-size:15px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:right;font:inherit;font-size:16px;color:var(--ink);
+  background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;cursor:pointer;min-height:52px}
+.opt:hover{border-color:var(--accent)}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.opt .dot{flex:0 0 22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center}
+.opt.multi .dot{border-radius:6px}
+.opt[aria-pressed="true"] .dot{border-color:var(--accent);background:var(--accent)}
+.opt[aria-pressed="true"] .dot::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent-ink)}
+.opt.multi[aria-pressed="true"] .dot::after{border-radius:2px}
+label.field{display:flex;flex-direction:column;gap:6px;font-size:15px;color:var(--muted)}
+input[type=text],textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1.5px solid var(--line);
+  border-radius:12px;padding:12px 14px;width:100%}
+textarea{min-height:110px;resize:vertical}
+input:focus,textarea:focus,.opt:focus-visible,.btn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.nav{display:flex;gap:10px;align-items:center}
+.btn{font:inherit;font-weight:600;font-size:16px;border-radius:999px;padding:12px 22px;cursor:pointer;border:1.5px solid transparent;min-height:48px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);flex:1}
+.btn.primary:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.err{color:#B3261E;font-size:14px;margin:0}
+@media (prefers-color-scheme: dark){ .err{color:#F2B8B5} }
+.summary{display:flex;flex-direction:column;gap:12px;max-height:46vh;overflow:auto;padding-inline-end:4px}
+.summary div{border-bottom:1px solid var(--line);padding-bottom:10px}
+.summary b{display:block;font-size:14px;color:var(--muted);font-weight:500}
+.summary span{white-space:pre-line}
+.foot{text-align:center;font-size:13px;color:var(--muted);direction:ltr}
+.fade{animation:in .3s ease both}
+@keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.fade{animation:none}.bar i{transition:none}}
+@media (max-width:420px){h1{font-size:21px}.card{padding:22px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">The <span>Freelancers</span></div>
+    <div class="count" id="count"></div>
+  </div>
+  <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+  <main class="card fade" id="card" aria-live="polite"></main>
+  <div class="foot">The Freelancers · Try Cotton website</div>
+</div>
+
+<script>
+// ===== Settings =====
+// WhatsApp number that receives the answers (country code, no + or spaces), e.g. 96512345678
+const WHATSAPP_TO = "96596789521";
+
+// ===== Questions (the journey) =====
+// type: intro | text | single | multi | review
+// "other": true adds a free-text "غير ذلك" choice. "when" decides if a step shows.
+const steps = [
+  { id:"intro", type:"intro",
+    title:"هلا وغلا 👋",
+    hint:"نجهّز صفحتي «الشروط والأحكام» و«سياسة الإرجاع والاستبدال» لموقع تراي الجديد. عندنا أسئلة بسيطة عن طريقة شغلكم اليومية، سؤال واحد كل مرة. تاخذ تقريبًا 5 دقايق." },
+
+  { id:"name", type:"text", section:"عنكم", title:"قبل لا نبدأ، منو معانا؟", hint:"اسمك ومنصبك، عشان نعرف نرجع لك لو احتجنا.", placeholder:"مثال: محمد — مدير المبيعات", required:true },
+
+  { id:"legal", type:"text", section:"الشركة", title:"شنو الاسم الرسمي للشركة مثل ما هو مكتوب في السجل التجاري؟", hint:"مكتوب عندنا: الفهد والشلبي للتجارة العامة والمقاولات. إذا صحيح، اكتب «صحيح».", placeholder:"الاسم الرسمي", required:true },
+  { id:"cr", type:"text", section:"الشركة", title:"رقم السجل التجاري؟", hint:"مكتوب عندنا 28936. إذا صحيح، اكتب «صحيح».", placeholder:"رقم السجل", required:true },
+  { id:"address", type:"text", section:"الشركة", title:"عنوان الشركة اللي نكتبه في الموقع؟", hint:"المنطقة، القطعة، الشارع، المبنى. أو اكتب «لا نريد عنوان».", placeholder:"العنوان", required:true },
+
+  { id:"cutoff", type:"single", section:"التوصيل", title:"لين أي ساعة يقدر العميل يطلب ويوصله الطلب باجر؟", options:["لين 6 المغرب","لين 8 بالليل","لين 10 بالليل","ما في وقت محدد، كل الطلبات توصل اليوم الثاني"], other:true },
+  { id:"days", type:"multi", section:"التوصيل", title:"أي أيام يشتغل التوصيل؟", hint:"اختر كل الأيام اللي فيها توصيل.", options:["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"] },
+  { id:"attempts", type:"single", section:"التوصيل", title:"إذا المندوب ما قدر يوصل للعميل (ما يرد أو العنوان غلط)، كم مرة يحاول قبل ما يُلغى الطلب؟", options:["مرة وحدة","مرتين","3 مرات","ما نلغي، نتواصل لين نوصل"], other:true },
+
+  { id:"pay", type:"multi", section:"الدفع", title:"طرق الدفع اللي تبونها في الموقع الجديد؟", hint:"اختر كل اللي ينطبق.", options:["كي نت","فيزا / ماستركارد","الدفع عند الاستلام (كاش)"] },
+  { id:"codRefund", type:"single", section:"الدفع", when:a=>(a.pay||[]).includes("الدفع عند الاستلام (كاش)"),
+    title:"لو العميل دفع كاش عند الاستلام ورجّع الطلب، كيف ترجعون له فلوسه؟", options:["كاش مع المندوب وقت الاستلام","تحويل بنكي","رصيد للطلب الجاي"], other:true },
+
+  { id:"cancel", type:"single", section:"الإلغاء", title:"لو العميل دفع وبعدين غيّر رأيه قبل لا ينشحن الطلب، يقدر يلغيه؟", options:["إيه، ونرجع له المبلغ كامل","لا، بعد الدفع ما في إلغاء"], other:true },
+
+  { id:"packs", type:"single", section:"الإرجاع", title:"العبوات (6 أو 12 قطعة): لو العميل فتح قطعة وحدة من العبوة، شنو يصير بالباقي؟", options:["نقبل إرجاع القطع المسكّرة فقط","العبوة لازم ترجع كاملة ومسكّرة، وإلا ما نقبل"], other:true },
+  { id:"sale", type:"single", section:"الإرجاع", title:"المنتجات اللي عليها خصم أو عرض، تنرجع مثل غيرها؟", options:["إيه، نفس السياسة","لا، العروض ما تنرجع ولا تتبدل","تتبدل بس، ما تنرجع فلوسها"], other:true },
+  { id:"exchange", type:"single", section:"الإرجاع", title:"في الاستبدال، العميل يقدر ياخذ شنو بداله؟", options:["نفس المنتج بمقاس أو لون ثاني فقط","أي منتج ثاني من الموقع"], other:true },
+  { id:"damaged", type:"single", section:"الإرجاع", title:"لو وصل للعميل منتج تالف أو غلط، خلال كم لازم يبلغكم؟", options:["خلال 24 ساعة","خلال 3 أيام","خلال 7 أيام"], other:true },
+
+  { id:"years", type:"single", section:"صفحة من نحن", title:"مكتوب في الموقع: «أكثر من 40 عامًا في السوق الكويتي». هذا صحيح ونقدر نثبته؟", options:["صحيح، خلّوه","نعدّل الرقم","نشيله"], other:true },
+  { id:"best", type:"single", section:"صفحة من نحن", title:"ومكتوب: «العلامة الأكثر مبيعًا في الكويت». عندكم شي يثبت هالكلام؟", options:["إيه، عندنا ما يثبت","نخففها (مثلاً: من أشهر العلامات في الكويت)","نشيلها"], other:true },
+
+  { id:"extra", type:"text", long:true, section:"أخيرًا", title:"في أي قاعدة أو شرط تبون نضيفه وما سألناكم عنه؟", hint:"مثلاً: حد أدنى للطلب، هدايا، تغليف، أي ملاحظة. إذا ما في شي، اكتب «لا».", placeholder:"اكتب هنا", required:false },
+
+  { id:"review", type:"review", title:"تمام، خلصنا! 🎉", hint:"راجع أجوبتك تحت. إذا كل شي صحيح، اضغط «إرسال على واتساب» وبتوصلنا الأجوبة مباشرة." }
+];
+
+// ===== State =====
+const answers = {}; const otherText = {};
+let i = 0;
+const visible = () => steps.filter(s => !s.when || s.when(answers));
+const qSteps = () => visible().filter(s => !["intro","review"].includes(s.type));
+
+const el = (tag, attrs={}, kids=[]) => { const e=document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)) { if(k==="class") e.className=v; else if(k==="text") e.textContent=v; else if(k.startsWith("on")) e.addEventListener(k.slice(2),v); else e.setAttribute(k,v); }
+  (Array.isArray(kids)?kids:[kids]).forEach(c=>c&&e.appendChild(c)); return e; };
+
+function valueOf(s){
+  const v = answers[s.id];
+  if (s.type==="multi") return (v||[]).join("، ");
+  if (v==="__other") return (otherText[s.id]||"").trim();
+  return (v||"").toString().trim();
+}
+function isDone(s){
+  if (s.type==="text") return !s.required || valueOf(s).length>0;
+  if (s.type==="multi") return (answers[s.id]||[]).length>0;
+  if (s.type==="single") return answers[s.id] && (answers[s.id]!=="__other" || valueOf(s).length>0);
+  return true;
+}
+
+function render(){
+  const list = visible(); const s = list[i]; const qs = qSteps(); const qi = qs.indexOf(s);
+  const card = document.getElementById("card"); card.replaceChildren(); card.classList.remove("fade"); void card.offsetWidth; card.classList.add("fade");
+  document.getElementById("count").textContent = qi>=0 ? `سؤال ${qi+1} من ${qs.length}` : "";
+  document.getElementById("bar").style.width = s.type==="intro" ? "0%" : s.type==="review" ? "100%" : `${Math.round((qi)/qs.length*100)}%`;
+
+  if (s.section) card.appendChild(el("div",{class:"step",text:s.section}));
+  card.appendChild(el("h1",{text:s.title, id:"q-title", tabindex:"-1"}));
+  if (s.hint) card.appendChild(el("p",{class:"hint",text:s.hint}));
+
+  const next = el("button",{class:"btn primary",type:"button",text: s.type==="intro"?"يلا نبدأ":"التالي", onclick:go});
+  const back = i>0 ? el("button",{class:"btn ghost",type:"button",text:"رجوع",onclick:()=>{i--;render()}}) : null;
+  const refresh = () => { next.disabled = !isDone(s); };
+
+  if (s.type==="text"){
+    const id="in-"+s.id;
+    const input = s.long ? el("textarea",{id,placeholder:s.placeholder||""}) : el("input",{id,type:"text",placeholder:s.placeholder||"",autocomplete:"off"});
+    input.value = answers[s.id]||"";
+    input.addEventListener("input",()=>{answers[s.id]=input.value;refresh()});
+    if (!s.long) input.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!next.disabled) go(); });
+    card.appendChild(el("label",{class:"field",for:id},[input]));
+    setTimeout(()=>input.focus(),50);
+  }
+
+  if (s.type==="single"||s.type==="multi"){
+    const wrap = el("div",{class:"opts",role:"group","aria-labelledby":"q-title"});
+    const opts = [...s.options]; if (s.other) opts.push("__other");
+    const otherInput = s.other ? el("input",{type:"text",id:"other-"+s.id,placeholder:"اكتب جوابك",autocomplete:"off"}) : null;
+    const otherWrap = s.other ? el("label",{class:"field",for:"other-"+s.id},[otherInput]) : null;
+    const sync = () => {
+      [...wrap.children].forEach(b=>{ const val=b.dataset.v;
+        const on = s.type==="multi" ? (answers[s.id]||[]).includes(val) : answers[s.id]===val;
+        b.setAttribute("aria-pressed", on?"true":"false"); });
+      if (otherWrap) otherWrap.hidden = answers[s.id]!=="__other";
+      refresh();
+    };
+    opts.forEach(o=>{
+      const b = el("button",{class:"opt"+(s.type==="multi"?" multi":""),type:"button","aria-pressed":"false"},[el("span",{class:"dot","aria-hidden":"true"}),el("span",{text:o==="__other"?"غير ذلك":o})]);
+      b.dataset.v=o;
+      b.addEventListener("click",()=>{
+        if (s.type==="multi"){ const cur=new Set(answers[s.id]||[]); cur.has(o)?cur.delete(o):cur.add(o); answers[s.id]=[...cur]; }
+        else { answers[s.id]=o; if(o==="__other") setTimeout(()=>otherInput.focus(),30); }
+        sync();
+        if (s.type==="single" && o!=="__other") setTimeout(()=>{ if(visible()[i]===s) go(); }, 280);
+      });
+      wrap.appendChild(b);
+    });
+    card.appendChild(wrap);
+    if (otherWrap){ otherInput.value = otherText[s.id]||""; otherInput.addEventListener("input",()=>{otherText[s.id]=otherInput.value;refresh()});
+      otherInput.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!next.disabled) go(); }); card.appendChild(otherWrap); }
+    sync();
+  }
+
+  if (s.type==="review"){
+    const sum = el("div",{class:"summary"});
+    qSteps().forEach(q=>{ sum.appendChild(el("div",{},[el("b",{text:q.title}), el("span",{text:valueOf(q)||"—"})])); });
+    card.appendChild(sum);
+    const text = buildMessage();
+    const wa = el("a",{class:"btn primary",href:`https://wa.me/${WHATSAPP_TO}?text=${encodeURIComponent(text)}`,target:"_blank",rel:"noopener",text:"إرسال على واتساب",style:"text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center"});
+    const copyMsg = el("p",{class:"hint",text:""});
+    const copy = el("button",{class:"btn ghost",type:"button",text:"نسخ الأجوبة",onclick:async()=>{
+      try{ await navigator.clipboard.writeText(text); copyMsg.textContent="تم النسخ. الصقها في واتساب أو إيميل وأرسلها لنا."; }
+      catch(e){ copyMsg.textContent="ما قدرنا ننسخ تلقائيًا. حدّد النص فوق وانسخه يدويًا."; } }});
+    card.appendChild(el("div",{class:"nav"},[wa]));
+    card.appendChild(el("div",{class:"nav"},[back, copy]));
+    card.appendChild(copyMsg);
+    card.appendChild(el("p",{class:"hint",text:"شكرًا على وقتكم. بنجهّز الصفحات ونرسلها لكم للمراجعة."}));
+    return;
+  }
+
+  card.appendChild(el("div",{class:"nav"},[back, next]));
+  refresh();
+  if (s.type!=="text") document.getElementById("q-title").focus({preventScroll:true});
+}
+
+function go(){
+  const list = visible(); const s = list[i];
+  if (!isDone(s)) return;
+  i = Math.min(i+1, visible().length-1);
+  render(); window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function buildMessage(){
+  const lines = ["أجوبة أسئلة موقع تراي (الشروط والأحكام + الإرجاع)",""];
+  qSteps().forEach((q,n)=>{ lines.push(`${n+1}) ${q.title}`); lines.push(`← ${valueOf(q)||"—"}`); lines.push(""); });
+  return lines.join("\n");
+}
+
+render();
+</script>
+</body>
+</html>
